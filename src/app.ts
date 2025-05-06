@@ -1,12 +1,12 @@
 import express from "express";
 import { globalErrorHandler } from "./common/middlewares/globalErrorHandler";
 import categoryRouter from "./category/category-router";
-import cookieParse from "cookie-parser";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
 app.use(express.json());
-app.use(cookieParse());
+app.use(cookieParser());
 
 app.use("/categories", categoryRouter);
 
