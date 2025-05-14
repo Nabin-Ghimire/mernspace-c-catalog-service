@@ -1,6 +1,5 @@
 export interface FileData {
-    fileName: string;
-    fileData: ArrayBuffer | string;
+    path: string;
 }
 
 export interface FileStorage {
