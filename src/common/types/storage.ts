@@ -1,0 +1,10 @@
+export interface FileData {
+    fileName: string;
+    fileData: ArrayBuffer | string;
+}
+
+export interface FileStorage {
+    upload(data: FileData): Promise<void>;
+    delete(filename: string): void;
+    getObjectUri(filename: string): string;
+}
