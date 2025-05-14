@@ -5,6 +5,9 @@ import createHttpError from "http-errors";
 import { ProductService } from "./product-service";
 import { Logger } from "winston";
 import { Product } from "./product-types";
+import { UploadedFile } from "express-fileupload";
+import { saveFileLocally } from "../common/services/multer/localUploader.ts ";
+import { uploadToCloudinaryAndDeleteLocal } from "../common/services/cloudinary/cloudinaryUploader.ts";
 
 export class ProductController {
     constructor(
@@ -13,10 +16,12 @@ export class ProductController {
     ) {}
 
     create = async (req: Request, res: Response, next: NextFunction) => {
+        console.log(req.body as Product, req.files!.image as UploadedFile);
         const result = validationResult(req);
         if (!result.isEmpty()) {
             return next(createHttpError(400, result.array()[0].msg as string));
         }
+
         const {
             name,
             description,
@@ -27,14 +32,23 @@ export class ProductController {
             isPublish,
         } = req.body as Product;
 
+        const file = req.files?.image as UploadedFile;
+        if (!file) return res.status(400).send("No file uploaded");
+
+        const localPath = await saveFileLocally(file);
+        const cloudinaryResult =
+            await uploadToCloudinaryAndDeleteLocal(localPath);
+
         const product = {
             name,
             description,
-            priceConfiguration,
-            attributes,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            priceConfiguration: JSON.parse(priceConfiguration),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            attributes: JSON.parse(attributes),
             tenantId,
             categoryId,
-            image: "image.jpeg",
+            image: cloudinaryResult.secure_url,
             isPublish,
         };
         //add proper request body types
