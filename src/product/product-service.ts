@@ -18,4 +18,8 @@ export class ProductService {
             { new: true },
         ); //new:true returns new updated document
     }
+
+    async getProduct(productId: string): Promise<Product | null> {
+        return await productModel.findOne({ _id: productId });
+    }
 }
