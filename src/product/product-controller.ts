@@ -8,6 +8,7 @@ import { Product } from "./product-types";
 import { UploadedFile } from "express-fileupload";
 import { saveFileLocally } from "../common/services/multer/localUploader.ts ";
 import { CloudinaryStorage } from "../common/services/cloudinary/cloudinaryUploader.ts";
+import { AuthRequest } from "../common/types";
 
 export class ProductController {
     constructor(
@@ -72,7 +73,26 @@ export class ProductController {
         let cloudinaryResult;
         let oldImage: string | undefined;
 
+        //check if tenant has access to the product
+        const productData = await this.productService.getProduct(productId);
+        if (!productData) {
+            return next(createHttpError(404, "Product not found"));
+        }
+
+        const tenant = (req as AuthRequest).auth.tenant;
+
+        if ((req as AuthRequest).auth.role !== "admin") {
+            if (productData.tenantId !== String(tenant)) {
+                return next(
+                    createHttpError(
+                        403,
+                        "You don't have access to this product",
+                    ),
+                );
+            }
+        }
         if (req.files?.image) {
+            oldImage = productData.image;
             const imageFile = req.files.image as UploadedFile;
             const localPath = await saveFileLocally(imageFile);
             cloudinaryResult =
@@ -80,7 +100,7 @@ export class ProductController {
                     localPath,
                 );
 
-            await this.cloudinaryStorage.deleteFromCloudinary(oldImage!);
+            await this.cloudinaryStorage.deleteFromCloudinary(oldImage);
         }
         const {
             name,
