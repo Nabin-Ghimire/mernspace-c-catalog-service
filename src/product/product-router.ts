@@ -7,7 +7,6 @@ import { ProductController } from "./product-controller";
 import createProductValidator from "./create-product-validator";
 import { ProductService } from "./product-service";
 import logger from "../config/logger";
-import fileUpload from "express-fileupload";
 
 const router = express.Router();
 
@@ -18,7 +17,6 @@ router.post(
     "/",
     authenticate,
     canAccess([Roles.ADMIN, Roles.MANAGER]),
-    fileUpload(),
     createProductValidator,
     asyncWrapper(productController.create),
 );
