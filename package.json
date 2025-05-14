@@ -49,6 +49,7 @@
         ]
     },
     "dependencies": {
+        "cloudinary": "^2.6.1",
         "config": "^3.3.12",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
