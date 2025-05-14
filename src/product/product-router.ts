@@ -7,11 +7,18 @@ import { ProductController } from "./product-controller";
 import createProductValidator from "./create-product-validator";
 import { ProductService } from "./product-service";
 import logger from "../config/logger";
+import updateProductValidator from "./update-product-validator";
+import { CloudinaryStorage } from "../common/services/cloudinary/cloudinaryUploader.ts";
 
 const router = express.Router();
 
 const productService = new ProductService();
-const productController = new ProductController(logger, productService);
+const cloudinaryStorage = new CloudinaryStorage();
+const productController = new ProductController(
+    logger,
+    productService,
+    cloudinaryStorage,
+);
 
 router.post(
     "/",
@@ -19,6 +26,14 @@ router.post(
     canAccess([Roles.ADMIN, Roles.MANAGER]),
     createProductValidator,
     asyncWrapper(productController.create),
+);
+
+router.put(
+    "/:productId",
+    authenticate,
+    canAccess([Roles.ADMIN, Roles.MANAGER]),
+    updateProductValidator,
+    asyncWrapper(productController.update),
 );
 
 export default router;
