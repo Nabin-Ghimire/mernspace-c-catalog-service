@@ -1,5 +1,5 @@
 import productModel from "./product-model";
-import { Product } from "./product-types";
+import { Filter, Product } from "./product-types";
 
 export class ProductService {
     async createProduct(product: Product) {
@@ -21,5 +21,29 @@ export class ProductService {
 
     async getProduct(productId: string): Promise<Product | null> {
         return await productModel.findOne({ _id: productId });
+    }
+
+    async getAllProducts(q: string, filters: Filter) {
+        const searchQueryRegexp = new RegExp(q, "i"); //q=case insensitive
+        const matchQuery = {
+            ...filters,
+            name: searchQueryRegexp,
+        };
+
+        const aggregate = productModel.aggregate([
+            {
+                $match: matchQuery,
+            },
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "categoryId",
+                    foreignField: "_id",
+                    as: "category",
+                },
+            },
+        ]);
+        const result = aggregate.exec();
+        return result as unknown as Product[];
     }
 }
