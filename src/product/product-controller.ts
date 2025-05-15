@@ -55,12 +55,13 @@ export class ProductController {
             image: cloudinaryImageResult.secure_url,
             isPublish,
         };
-        //add proper request body types
+
         const newProduct = await this.productService.createProduct(product);
 
         if (!newProduct) {
             return next(createHttpError(400, "Product creation failed"));
         }
+
         res.status(201).json({ id: newProduct._id });
     };
 
@@ -155,6 +156,12 @@ export class ProductController {
         const products = await this.productService.getAllProducts(
             q as string,
             filters,
+            {
+                page: req.query.page ? parseInt(req.query.page as string) : 1,
+                limit: req.query.limit
+                    ? parseInt(req.query.limit as string)
+                    : 10,
+            },
         );
 
         res.json(products);
