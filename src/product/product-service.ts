@@ -1,29 +1,35 @@
+import { paginationLabels } from "../config/pagination";
 import productModel from "./product-model";
-import { Filter, Product } from "./product-types";
+import { Filter, paginateQuery, Product } from "./product-types";
 
 export class ProductService {
     async createProduct(product: Product) {
-        return await productModel.create(product);
+        return (await productModel.create(product)) as Product;
     }
 
     async getProductImage(productId: string) {
-        const product = await productModel.findById(productId);
+        const product = (await productModel.findById(productId)) as Product;
+
         return product?.image;
     }
 
     async updateProduct(productId: string, product: Product) {
-        return await productModel.findOneAndUpdate(
+        return (await productModel.findOneAndUpdate(
             { _id: productId },
             { $set: product },
             { new: true },
-        ); //new:true returns new updated document
+        )) as Product; //new:true returns new updated document
     }
 
     async getProduct(productId: string): Promise<Product | null> {
         return await productModel.findOne({ _id: productId });
     }
 
-    async getAllProducts(q: string, filters: Filter) {
+    async getAllProducts(
+        q: string,
+        filters: Filter,
+        paginateQuery: paginateQuery,
+    ) {
         const searchQueryRegexp = new RegExp(q, "i"); //q=case insensitive
         const matchQuery = {
             ...filters,
@@ -56,7 +62,11 @@ export class ProductService {
                 $unwind: "$category", //shows category items in the form of object
             },
         ]);
-        const result = aggregate.exec();
-        return result as unknown as Product[];
+        return productModel.aggregatePaginate(aggregate, {
+            ...paginateQuery,
+            customLabels: paginationLabels,
+        });
+        //     const result = aggregate.exec();
+        //     return result as unknown as Product[];
     }
 }
