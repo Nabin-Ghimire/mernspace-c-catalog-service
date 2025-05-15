@@ -151,7 +151,7 @@ export class ProductController {
                 categoryId as string,
             );
         }
-
+        //TODO: add logging
         const products = await this.productService.getAllProducts(
             q as string,
             filters,
