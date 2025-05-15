@@ -40,7 +40,20 @@ export class ProductService {
                     localField: "categoryId",
                     foreignField: "_id",
                     as: "category",
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                name: 1, //1 means show the items
+                                attributes: 1,
+                                priceConfiguration: 1,
+                            },
+                        },
+                    ],
                 },
+            },
+            {
+                $unwind: "$category", //shows category items in the form of object
             },
         ]);
         const result = aggregate.exec();
