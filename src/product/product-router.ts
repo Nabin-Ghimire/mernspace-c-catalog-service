@@ -28,13 +28,20 @@ router.post(
     asyncWrapper(productController.create),
 );
 
-router.put(
-    "/:productId",
-    authenticate,
-    canAccess([Roles.ADMIN, Roles.MANAGER]),
-    updateProductValidator,
-    asyncWrapper(productController.update),
-);
+router
+    .route("/:productId")
+    .get(asyncWrapper(productController.getProduct))
+    .put(
+        authenticate,
+        canAccess([Roles.ADMIN, Roles.MANAGER]),
+        updateProductValidator,
+        asyncWrapper(productController.update),
+    )
+    .delete(
+        authenticate,
+        canAccess([Roles.ADMIN, Roles.MANAGER]),
+        asyncWrapper(productController.deleteProduct),
+    );
 
 router.get("/", asyncWrapper(productController.index));
 
