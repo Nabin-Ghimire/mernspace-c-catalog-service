@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { paginationLabels } from "../config/pagination";
 import productModel from "./product-model";
 import { Filter, paginateQuery, Product } from "./product-types";
@@ -22,7 +23,38 @@ export class ProductService {
     }
 
     async getProduct(productId: string): Promise<Product | null> {
-        return await productModel.findOne({ _id: productId });
+        const matchQuery = {
+            _id: new mongoose.Types.ObjectId(productId),
+        };
+        const aggregate = productModel.aggregate([
+            {
+                $match: matchQuery,
+            },
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "categoryId",
+                    foreignField: "_id",
+                    as: "category",
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                name: 1,
+                                attributes: 1,
+                                priceConfiguration: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $unwind: "$category",
+            },
+        ]);
+
+        const result = await aggregate.exec();
+        return result[0] as Product;
     }
 
     async getAllProducts(
@@ -68,5 +100,9 @@ export class ProductService {
         });
         //     const result = aggregate.exec();
         //     return result as unknown as Product[];
+    }
+
+    async deleteProduct(productId: string) {
+        await productModel.findByIdAndDelete(productId);
     }
 }
