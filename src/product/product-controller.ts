@@ -95,6 +95,8 @@ export class ProductController {
         }
         if (req.files?.image) {
             oldImage = productData.image;
+            const encodedPublicId = extractPublicId(oldImage);
+            const publicId = decodeURIComponent(encodedPublicId);
             const imageFile = req.files.image as UploadedFile;
             const localPath = await saveFileLocally(imageFile);
             cloudinaryResult =
@@ -102,7 +104,8 @@ export class ProductController {
                     localPath,
                 );
 
-            await this.cloudinaryStorage.deleteFromCloudinary(oldImage);
+            await this.cloudinaryStorage.deleteFromCloudinary(publicId);
+            // console.log("Response",response,publicId,oldImage);
         }
         const {
             name,
@@ -164,6 +167,58 @@ export class ProductController {
             },
         );
 
-        res.json(products);
+        res.json({
+            data: products,
+            total: products.total,
+            pazeSize: products.limit,
+            currentPage: products.page,
+        });
     };
+
+    getProduct = async (req: Request, res: Response, next: NextFunction) => {
+        const { productId } = req.params;
+        const product = await this.productService.getProduct(productId);
+        if (!product) {
+            return next(createHttpError(404, "Product not found"));
+        }
+        res.json(product);
+    };
+
+    deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
+        const { productId } = req.params;
+        const product = await this.productService.getProduct(productId);
+        if (!product) {
+            return next(createHttpError(404, "Product not found"));
+        }
+
+        const tenant = (req as AuthRequest).auth.tenant;
+
+        if ((req as AuthRequest).auth.role !== "admin") {
+            if (product.tenantId !== String(tenant)) {
+                return next(
+                    createHttpError(
+                        403,
+                        "You don't have access to this product",
+                    ),
+                );
+            }
+        }
+        const imageUri = product.image;
+        const publicId = extractPublicId(imageUri);
+        await this.cloudinaryStorage.deleteFromCloudinary(publicId);
+        await this.productService.deleteProduct(productId);
+        res.json({ id: productId });
+    };
+}
+
+function extractPublicId(imageUrl: string): string {
+    // Clean double extensions first (e.g. ".jpg.jpg" → ".jpg")
+    const cleanedUrl = imageUrl.replace(/(\.[a-z]+)\1$/i, "$1");
+
+    // Extract the public_id after '/upload/' and optional version segment
+    const match = cleanedUrl.match(/\/upload\/(?:v\d+\/)?([^.]+)\.[a-z]+$/i);
+    if (!match || !match[1]) {
+        throw new Error("Could not extract public_id from image URL");
+    }
+    return match[1];
 }
