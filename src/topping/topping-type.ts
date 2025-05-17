@@ -6,3 +6,12 @@ export interface Topping {
     image: string;
     isPublish?: boolean;
 }
+export interface Filter {
+    tenantId?: string;
+    isPublish?: boolean;
+}
+
+export interface PaginateQuery {
+    page: number;
+    limit: number;
+}
