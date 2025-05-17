@@ -8,6 +8,7 @@ import { ToppingService } from "./topping-service";
 import logger from "../config/logger";
 import { CloudinaryStorage } from "../common/services/cloudinary/cloudinaryUploader.ts";
 import { ToppingController } from "./topping-controller";
+import updateToppingValidator from "./update-topping-validator";
 
 const router = express.Router();
 
@@ -26,6 +27,21 @@ router.post(
     createToppingValidator,
     asyncWrapper(toppingController.create),
 );
+
+router
+    .route("/:id")
+    .get(asyncWrapper(toppingController.getToppingById))
+    .patch(
+        authenticate,
+        canAccess([Roles.ADMIN, Roles.MANAGER]),
+        updateToppingValidator,
+        asyncWrapper(toppingController.updateToppingById),
+    )
+    .delete(
+        authenticate,
+        canAccess([Roles.ADMIN, Roles.MANAGER]),
+        asyncWrapper(toppingController.deleteToppingById),
+    );
 
 router.get("/", asyncWrapper(toppingController.index));
 
