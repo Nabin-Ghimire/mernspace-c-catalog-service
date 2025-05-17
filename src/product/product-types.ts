@@ -18,7 +18,7 @@ export interface Filter {
     isPublish?: boolean;
 }
 
-export interface paginateQuery {
+export interface PaginateQuery {
     page: number;
     limit: number;
 }

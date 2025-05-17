@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { paginationLabels } from "../config/pagination";
 import productModel from "./product-model";
-import { Filter, paginateQuery, Product } from "./product-types";
+import { Filter, PaginateQuery, Product } from "./product-types";
 
 export class ProductService {
     async createProduct(product: Product) {
@@ -60,7 +60,7 @@ export class ProductService {
     async getAllProducts(
         q: string,
         filters: Filter,
-        paginateQuery: paginateQuery,
+        paginateQuery: PaginateQuery,
     ) {
         const searchQueryRegexp = new RegExp(q, "i"); //q=case insensitive
         const matchQuery = {
