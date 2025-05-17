@@ -128,7 +128,7 @@ export class ProductController {
             categoryId,
             image: cloudinaryResult?.secure_url
                 ? cloudinaryResult.secure_url
-                : (oldImage as string),
+                : productData.image,
             isPublish,
         };
         await this.productService.updateProduct(productId, product);
