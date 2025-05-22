@@ -8,7 +8,7 @@ export class CategoryService {
     }
 
     async getAll() {
-        return categoryModel.find({}).select("_id name");
+        return categoryModel.find({});
     }
 
     async updatedCategoryById(_id: string, category: Category) {
