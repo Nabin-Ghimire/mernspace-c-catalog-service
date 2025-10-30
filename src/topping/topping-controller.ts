@@ -9,6 +9,7 @@ import { UploadedFile } from "express-fileupload";
 import { saveFileLocally } from "../common/services/multer/localUploader.ts ";
 import { CloudinaryStorage } from "../common/services/cloudinary/cloudinaryUploader.ts";
 import { AuthRequest } from "../common/types";
+import { toString } from "express-validator/src/utils";
 
 export class ToppingController {
     constructor(
@@ -80,6 +81,21 @@ export class ToppingController {
     ) => {
         const { id } = req.params;
         const topping = await this.toppingService.getSingleTopping(id);
+        if (!topping) {
+            return next(createHttpError(404, "Topping not found"));
+        }
+        res.json(topping);
+    };
+
+    getToppingByTenantId = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { id } = req.params;
+        const topping = await this.toppingService.getSingleToppingByTenantId(
+            toString(id),
+        );
         if (!topping) {
             return next(createHttpError(404, "Topping not found"));
         }

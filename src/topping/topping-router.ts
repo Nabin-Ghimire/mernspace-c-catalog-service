@@ -44,5 +44,6 @@ router
     );
 
 router.get("/", asyncWrapper(toppingController.index));
+router.get("/", asyncWrapper(toppingController.getToppingByTenantId));
 
 export default router;

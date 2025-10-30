@@ -32,6 +32,12 @@ export class ToppingService {
         return (await toppingModel.findById(id)) as Topping;
     }
 
+    async getSingleToppingByTenantId(tenantId: string) {
+        return (await toppingModel.findOne({
+            where: { tenantId: tenantId },
+        })) as Topping;
+    }
+
     async updateTopping(id: string, topping: Topping) {
         return (await toppingModel.findOneAndUpdate(
             { _id: id },
